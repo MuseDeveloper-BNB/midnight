@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MEMBER
+  EDITOR
+  ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+enum ContentType {
+  NEWS
+  BLOG
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  VISIBLE
+  HIDDEN
+  DELETED
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
+
+enum ModerationAction {
+  HIDE_COMMENT
+  DELETE_COMMENT
+  PUBLISH_CONTENT
+  UNPUBLISH_CONTENT
+  ARCHIVE_CONTENT
+  CHANGE_ROLE
+  DEACTIVATE_USER
+  ACTIVATE_USER
+}
+
+enum ModerationTargetType {
+  COMMENT
+  CONTENT
+  USER
+}
+
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  name          String?
+  password      String?
+  role          UserRole      @default(MEMBER)
+  provider      AuthProvider  @default(EMAIL)
+  providerId    String?
+  active        Boolean       @default(true)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  authoredContent   Content[]       @relation("ContentAuthor")
+  comments          Comment[]
+  reports           Report[]
+  moderationActions ModerationLog[]
+  savedItems        SavedItem[]
+
+  @@index([email])
+  @@index([provider, providerId])
+}
+
+model Content {
+  id                  String        @id @default(uuid())
+  type                ContentType
+  title               String        @db.VarChar(255)
+  body                String        @db.Text
+  slug                String        @unique
+  imageUrl            String?
+  status              ContentStatus @default(DRAFT)
+  authorId            String
+  publishedAt         DateTime?
+  scheduledPublishAt  DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  author      User        @relation("ContentAuthor", fields: [authorId], references: [id])
+  comments    Comment[]
+  savedItems  SavedItem[]
+
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@index([authorId])
+  @@index([type, status, publishedAt])
+}
+
+model Comment {
+  id        String        @id @default(uuid())
+  body      String        @db.Text
+  contentId String
+  authorId  String
+  status    CommentStatus @default(VISIBLE)
+  deletedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  author  User    @relation(fields: [authorId], references: [id])
+  reports Report[]
+
+  @@index([contentId, status, deletedAt])
+  @@index([authorId])
+  @@index([contentId, createdAt])
+}
+
+model Report {
+  id         String       @id @default(uuid())
+  commentId  String
+  reporterId String
+  reason     String?      @db.Text
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  comment  Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reporter User    @relation(fields: [reporterId], references: [id])
+
+  @@index([commentId])
+  @@index([reporterId])
+  @@index([status, createdAt])
+}
+
+model ModerationLog {
+  id          String                @id @default(uuid())
+  action      ModerationAction
+  targetType  ModerationTargetType
+  targetId    String
+  moderatorId String
+  details     Json?
+  createdAt   DateTime              @default(now())
+
+  moderator User @relation(fields: [moderatorId], references: [id])
+
+  @@index([moderatorId])
+  @@index([targetType, targetId])
+  @@index([action, createdAt])
+  @@index([createdAt])
+}
+
+model SavedItem {
+  id        String   @id @default(uuid())
+  userId    String
+  contentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@index([userId, contentId])
+}

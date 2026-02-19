@@ -1,0 +1,33 @@
+# MIDNIGHT_NEWS Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-01-28
+
+## Active Technologies
+- TypeScript 5.x, Node.js 20.x LTS + Next.js 14+ (App Router), React 18+, Prisma ORM, NextAuth.js v5 (Auth.js), Zod (003-member-profile-enhancements)
+- PostgreSQL (Prisma) — add `SavedItem`; User, Comment, Content unchanged (003-member-profile-enhancements)
+
+- TypeScript 5.x, Node.js 20.x LTS (same as 001-news-website) + Next.js 14+ (App Router), React 18+, existing Prisma/NextAuth stack; CSS (globals + module/utility as chosen) (002-minimal-news-design)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript 5.x, Node.js 20.x LTS (same as 001-news-website): Follow standard conventions
+
+## Recent Changes
+- 003-member-profile-enhancements: Added TypeScript 5.x, Node.js 20.x LTS + Next.js 14+ (App Router), React 18+, Prisma ORM, NextAuth.js v5 (Auth.js), Zod
+- 003-member-profile-enhancements: Added TypeScript 5.x, Node.js 20.x LTS + Next.js 14+ (App Router), React 18+, Prisma ORM, NextAuth.js v5 (Auth.js), Zod
+
+- 002-minimal-news-design: Added TypeScript 5.x, Node.js 20.x LTS (same as 001-news-website) + Next.js 14+ (App Router), React 18+, existing Prisma/NextAuth stack; CSS (globals + module/utility as chosen)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

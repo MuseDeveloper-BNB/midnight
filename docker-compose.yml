@@ -1,0 +1,25 @@
+# Midnight News – PostgreSQL baza za development
+# Pokretanje: docker compose up -d
+# Zaustavljanje: docker compose down
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: midnight_news_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: midnight_news
+    ports:
+      - "5432:5432"
+    volumes:
+      - midnight_news_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d midnight_news"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  midnight_news_data:
