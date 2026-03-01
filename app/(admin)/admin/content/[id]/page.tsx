@@ -62,6 +62,8 @@ export default async function AdminEditContentPage({ params }: PageProps) {
               title: content.title,
               body: content.body,
               slug: content.slug,
+              blogAuthor: content.blogAuthor,
+              imageUrl: content.imageUrl,
             }}
           />
 

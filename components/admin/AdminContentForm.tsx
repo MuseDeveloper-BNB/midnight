@@ -14,6 +14,7 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [body, setBody] = useState('');
+  const [blogAuthor, setBlogAuthor] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [publishNow, setPublishNow] = useState(true);
   const [scheduledAt, setScheduledAt] = useState('');
@@ -31,6 +32,7 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
     formData.set('type', contentType);
     formData.set('title', title);
     if (slug.trim()) formData.set('slug', slug.trim());
+    if (blogAuthor.trim()) formData.set('blogAuthor', blogAuthor.trim());
     formData.set('body', body || '');
     if (imageFile) formData.set('image', imageFile);
     if (publishNow) {
@@ -46,6 +48,7 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
         setTitle('');
         setSlug('');
         setBody('');
+        setBlogAuthor('');
         setScheduledAt('');
         setImageFile(null);
         if (imageInputRef.current) imageInputRef.current.value = '';
@@ -100,6 +103,22 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
       </div>
 
       <div className="admin-content-field">
+        <label htmlFor={`${contentType}-blogAuthor`}>Author name (optional)</label>
+        <input
+          id={`${contentType}-blogAuthor`}
+          name="blogAuthor"
+          type="text"
+          value={blogAuthor}
+          onChange={(e) => setBlogAuthor(e.target.value)}
+          maxLength={120}
+          placeholder="e.g. John Smith"
+        />
+        <span className="admin-content-hint">
+          If empty, we show the signed-in editor.
+        </span>
+      </div>
+
+      <div className="admin-content-field">
         <label htmlFor={`${contentType}-image`}>Cover image (optional)</label>
         <input
           ref={imageInputRef}
@@ -111,7 +130,7 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
           aria-describedby={`${contentType}-image-hint`}
         />
         <span id={`${contentType}-image-hint`} className="admin-content-hint">
-          JPEG, PNG, WebP or GIF. Max 5MB. Shown as the article cover on lists and detail page.
+          JPEG, PNG, WebP or GIF. Max 10MB. Recommended: 1200x675px (16:9) for best cover quality.
         </span>
       </div>
 

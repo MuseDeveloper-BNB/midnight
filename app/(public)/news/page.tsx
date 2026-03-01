@@ -61,7 +61,7 @@ export default async function NewsPage({
                   <Link href={`/news/${item.slug}`}>{item.title}</Link>
                 </h2>
                 <div className="card-meta">
-                  {item.author?.name ?? 'Editorial'}
+                  {item.blogAuthor ?? item.author?.name ?? 'Editorial'}
                   {item.publishedAt && <span> · {formatDate(item.publishedAt.toISOString())}</span>}
                 </div>
               </article>

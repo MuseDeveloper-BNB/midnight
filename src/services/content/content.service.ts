@@ -84,6 +84,7 @@ export class ContentService {
       body: string;
       slug?: string;
       imageUrl?: string | null;
+      blogAuthor?: string;
       publishNow?: boolean;
       scheduledPublishAt?: Date;
     },
@@ -102,6 +103,7 @@ export class ContentService {
         body: data.body,
         slug,
         imageUrl: data.imageUrl ?? null,
+        blogAuthor: data.blogAuthor ?? null,
         status,
         authorId,
         publishedAt,
@@ -112,7 +114,7 @@ export class ContentService {
 
   async updateContent(
     id: string,
-    data: { title?: string; body?: string; slug?: string },
+    data: { title?: string; body?: string; slug?: string; blogAuthor?: string | null; imageUrl?: string | null },
     actorId: string,
     options?: { allowAdminOverride?: boolean }
   ) {

@@ -89,6 +89,7 @@ model Content {
   body                String        @db.Text
   slug                String        @unique
   imageUrl            String?
+  blogAuthor          String?       @db.VarChar(120)
   status              ContentStatus @default(DRAFT)
   authorId            String
   publishedAt         DateTime?

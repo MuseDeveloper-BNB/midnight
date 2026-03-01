@@ -2387,6 +2387,7 @@ main {
 
 .footer-brand-wrap {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
@@ -2425,6 +2426,34 @@ main {
 
 .footer-links a:hover {
   color: var(--color-accent);
+}
+
+.footer-x-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-x-link:hover {
+  color: var(--color-accent);
+}
+
+.footer-x-link:hover .footer-x-handle {
+  color: var(--color-accent);
+}
+
+.footer-x-logo {
+  width: 20px;
+  height: 20px;
+}
+
+.footer-x-handle {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
 }
 
 .footer-powered {

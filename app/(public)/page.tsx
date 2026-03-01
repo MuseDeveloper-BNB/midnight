@@ -78,7 +78,7 @@ export default async function HomePage() {
           </h2>
           <p className="story-excerpt">{extractExcerpt(lead.body, 220)}</p>
           <div className="story-meta">
-            <span className="author">{lead.author?.name ?? 'Editorial'}</span>
+            <span className="author">{lead.blogAuthor ?? lead.author?.name ?? 'Editorial'}</span>
             {lead.publishedAt && <span> · {formatDate(lead.publishedAt.toISOString())}</span>}
           </div>
         </article>
@@ -90,7 +90,7 @@ export default async function HomePage() {
                 <Link href={`/news/${item.slug}`}>{item.title}</Link>
               </h3>
               <div className="story-meta">
-                {item.author?.name ?? 'Editorial'}
+                {item.blogAuthor ?? item.author?.name ?? 'Editorial'}
                 {item.publishedAt && <span> · {formatDate(item.publishedAt.toISOString())}</span>}
               </div>
             </article>
@@ -115,7 +115,7 @@ export default async function HomePage() {
                   <Link href={`/news/${item.slug}`}>{item.title}</Link>
                 </h3>
                 <div className="card-meta">
-                  {item.author?.name ?? 'Editorial'}
+                  {item.blogAuthor ?? item.author?.name ?? 'Editorial'}
                   {item.publishedAt && <span> · {formatDate(item.publishedAt.toISOString())}</span>}
                 </div>
               </article>
@@ -141,7 +141,7 @@ export default async function HomePage() {
                   <Link href={`/blog/${item.slug}`}>{item.title}</Link>
                 </h3>
                 <div className="card-meta">
-                  {item.author?.name ?? 'Editorial'}
+                  {item.blogAuthor ?? item.author?.name ?? 'Editorial'}
                   {item.publishedAt && <span> · {formatDate(item.publishedAt.toISOString())}</span>}
                 </div>
               </article>

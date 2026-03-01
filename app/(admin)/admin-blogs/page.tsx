@@ -47,7 +47,7 @@ export default async function AdminBlogsPage() {
                       <span style={{ marginLeft: 'var(--space-sm)', fontSize: 'var(--text-small)', color: 'var(--color-text-muted)' }}>
                         {c.publishedAt && formatDate(c.publishedAt.toISOString())}
                         {' · '}
-                        {c.author?.name ?? c.author?.email ?? '—'}
+                        {c.blogAuthor ?? c.author?.name ?? c.author?.email ?? '—'}
                       </span>
                     </div>
                     <Link href={`/admin/content/${c.id}`} className="btn btn-outline" style={{ flexShrink: 0 }}>

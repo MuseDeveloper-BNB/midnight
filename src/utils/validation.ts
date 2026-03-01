@@ -22,6 +22,7 @@ export const contentSchema = z.object({
   body: z.string().min(1),
   slug: z.string().min(1).max(255).optional(),
   imageUrl: z.string().min(1).max(2048).optional(),
+  blogAuthor: z.string().trim().min(1).max(120).optional(),
   publishNow: z
     .union([z.boolean(), z.literal('true'), z.literal('false'), z.literal('on')])
     .optional()
@@ -30,7 +31,10 @@ export const contentSchema = z.object({
     .string()
     .min(1)
     .optional()
-    .transform((v) => (v && v.trim() ? new Date(v.trim()) : undefined)),
+    .transform((v) => (v && v.trim() ? new Date(v.trim()) : undefined))
+    .refine((v) => !v || !Number.isNaN(v.getTime()), {
+      message: 'Invalid scheduled publish date.',
+    }),
 });
 
 const emptyToUndefined = (v: unknown) =>

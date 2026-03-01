@@ -1,56 +1,37 @@
 'use server';
 
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
-import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { contentService } from '@/services/content/content.service';
 import { moderationService } from '@/services/moderation/moderation.service';
 import { requireRole } from '@/lib/permissions';
 import { contentSchema } from '@/utils/validation';
 import { sanitizeHtml } from '@/utils/sanitization';
 import { AppError } from '@/utils/errors';
-
-const ALLOWED_IMAGE_TYPES: Record<string, string> = {
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-  'image/webp': '.webp',
-  'image/gif': '.gif',
-};
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+import { saveUploadedImage } from '@/lib/upload';
 
 function formDataToPayload(fd: FormData) {
-  const publishNow = fd.get('publishNow');
+  const publishNowRaw = fd.get('publishNow');
   const raw = fd.get('scheduledPublishAt');
+  const blogAuthorRaw = fd.get('blogAuthor');
+  const publishNowFlag =
+    publishNowRaw === 'on' || publishNowRaw === 'true' || publishNowRaw === '1';
+  const hasSchedule = Boolean(raw && typeof raw === 'string' && raw.trim());
+
   return {
     type: fd.get('type') ?? 'NEWS',
     title: (fd.get('title') as string | null) ?? '',
     body: (fd.get('body') as string | null) ?? '',
     slug: (fd.get('slug') as string | null) || undefined,
-    publishNow: publishNow === 'on' || publishNow === 'true' || publishNow === '1',
+    blogAuthor:
+      typeof blogAuthorRaw === 'string' && blogAuthorRaw.trim() ? blogAuthorRaw.trim() : undefined,
+    // Safety fallback: if form does not send publishNow and no schedule is set, publish immediately.
+    publishNow: publishNowFlag || (!publishNowFlag && !hasSchedule),
     scheduledPublishAt:
       raw && typeof raw === 'string' && raw.trim()
         ? (raw.trim() as string)
         : undefined,
   };
-}
-
-async function saveUploadedImage(file: File): Promise<{ imageUrl: string } | { error: string }> {
-  const ext = ALLOWED_IMAGE_TYPES[file.type];
-  if (!ext) {
-    return { error: 'Invalid image type. Use JPEG, PNG, WebP or GIF.' };
-  }
-  if (file.size > MAX_IMAGE_SIZE) {
-    return { error: 'Image must be 5MB or less.' };
-  }
-  const name = `${randomUUID()}${ext}`;
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-  await mkdir(uploadsDir, { recursive: true });
-  const filePath = path.join(uploadsDir, name);
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer);
-  return { imageUrl: `/uploads/${name}` };
 }
 
 export async function createContentAction(
@@ -92,6 +73,7 @@ export async function createContentAction(
         body,
         slug: parsed.data.slug,
         imageUrl: parsed.data.imageUrl,
+        blogAuthor: parsed.data.blogAuthor,
         publishNow: parsed.data.publishNow ?? false,
         scheduledPublishAt: parsed.data.scheduledPublishAt,
       },
@@ -115,6 +97,9 @@ export async function createContentAction(
     revalidatePath('/blog');
     return { success: true };
   } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      return { success: false, error: 'Slug already exists. Choose a different slug.' };
+    }
     if (e instanceof AppError) {
       return { success: false, error: e.message };
     }

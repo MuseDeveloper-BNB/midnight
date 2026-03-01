@@ -61,7 +61,7 @@ export default async function BlogPage({
                   <Link href={`/blog/${item.slug}`}>{item.title}</Link>
                 </h2>
                 <div className="card-meta">
-                  {item.author?.name ?? 'Editorial'}
+                  {item.blogAuthor ?? item.author?.name ?? 'Editorial'}
                   {item.publishedAt && <span> · {formatDate(item.publishedAt.toISOString())}</span>}
                 </div>
               </article>

@@ -47,7 +47,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
         title={content.title}
         body={content.body}
         category="Blog"
-        authorName={content.author?.name ?? content.author?.email ?? 'Editorial'}
+        authorName={content.blogAuthor ?? content.author?.name ?? content.author?.email ?? 'Editorial'}
         publishedAt={content.publishedAt?.toISOString() ?? null}
         imageUrl={content.imageUrl}
       />

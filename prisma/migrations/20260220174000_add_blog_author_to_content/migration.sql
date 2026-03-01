@@ -1,0 +1,2 @@
+ALTER TABLE "Content"
+ADD COLUMN "blogAuthor" VARCHAR(120);
