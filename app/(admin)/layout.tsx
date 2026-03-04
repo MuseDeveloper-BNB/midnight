@@ -7,10 +7,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="admin-layout">
       <header className="admin-layout-header">
         <div className="admin-layout-header-inner">
+          <Link href="/admin-dashboard" className="admin-layout-brand">
+            Admin
+          </Link>
           <AdminNav />
           <nav className="admin-layout-quicklinks" aria-label="Quick links">
-            <Link href="/" className="admin-nav-link">Home</Link>
-            <SignOutButton className="admin-nav-link" />
+            <Link href="/" className="admin-quicklink">View site</Link>
+            <SignOutButton className="admin-quicklink admin-quicklink--outline" />
           </nav>
         </div>
       </header>

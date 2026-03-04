@@ -117,7 +117,7 @@ export class ContentService {
 
   async updateContent(
     id: string,
-    data: { title?: string; body?: string; slug?: string; blogAuthor?: string | null; imageUrl?: string | null; publishedAt?: Date },
+    data: { title?: string; body?: string; slug?: string; blogAuthor?: string | null; imageUrl?: string | null; publishedAt?: Date; scheduledPublishAt?: Date | null },
     actorId: string,
     options?: { allowAdminOverride?: boolean }
   ) {
@@ -160,6 +160,55 @@ export class ContentService {
     return db.content.findMany({
       where: { authorId },
       orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  /** Admin list: all non-archived content (DRAFT + PUBLISHED) by type. */
+  async getContentForAdminList(options: {
+    type: ContentType;
+    limit?: number;
+    sort?: 'newest' | 'oldest';
+  }) {
+    await this.publishDueContent();
+    const { type, limit = 100, sort = 'newest' } = options;
+    const dir = sort === 'oldest' ? 'asc' : 'desc';
+
+    return db.content.findMany({
+      where: {
+        type,
+        status: { in: ['DRAFT' as ContentStatus, 'PUBLISHED' as ContentStatus] },
+      },
+      orderBy: { updatedAt: dir },
+      take: limit,
+      include: {
+        author: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+  }
+
+  /** Archived content by type. */
+  async getArchivedContent(options: {
+    type: ContentType;
+    limit?: number;
+    sort?: 'newest' | 'oldest';
+  }) {
+    const { type, limit = 100, sort = 'newest' } = options;
+    const orderBy = sort === 'oldest' ? { publishedAt: 'asc' as const } : { publishedAt: 'desc' as const };
+
+    return db.content.findMany({
+      where: {
+        type,
+        status: 'ARCHIVED' as ContentStatus,
+      },
+      orderBy,
+      take: limit,
+      include: {
+        author: {
+          select: { name: true, email: true },
+        },
+      },
     });
   }
 }

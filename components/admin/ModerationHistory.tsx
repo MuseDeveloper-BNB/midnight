@@ -40,7 +40,7 @@ function describeAction(log: ModerationHistoryProps['logs'][number]): string {
 
 export function ModerationHistory({ logs }: ModerationHistoryProps) {
   if (!logs.length) {
-    return <p>No moderation actions recorded yet.</p>;
+    return <p className="admin-list-empty">No moderation actions recorded yet.</p>;
   }
 
   return (

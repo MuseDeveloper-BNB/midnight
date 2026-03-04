@@ -24,6 +24,8 @@ type AdminContentEditFormProps = {
     blogAuthor?: string | null;
     imageUrl?: string | null;
     publishedAt?: Date | string | null;
+    scheduledPublishAt?: Date | string | null;
+    status?: string;
   };
 };
 
@@ -34,6 +36,7 @@ export function AdminContentEditForm({ initialValues }: AdminContentEditFormProp
   const [body, setBody] = useState(initialValues.body || '');
   const [blogAuthor, setBlogAuthor] = useState(initialValues.blogAuthor ?? '');
   const [publishedAt, setPublishedAt] = useState(toDatetimeLocal(initialValues.publishedAt ?? null));
+  const [scheduledPublishAt, setScheduledPublishAt] = useState(toDatetimeLocal(initialValues.scheduledPublishAt ?? null));
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +58,7 @@ export function AdminContentEditForm({ initialValues }: AdminContentEditFormProp
     if (removeImage) formData.set('removeImage', 'on');
     if (imageFile) formData.set('image', imageFile);
     if (publishedAt.trim()) formData.set('publishedAt', publishedAt.trim());
+    formData.set('scheduledPublishAt', scheduledPublishAt.trim());
 
     startTransition(async () => {
       const result = await updateContentAction(formData);
@@ -188,6 +192,22 @@ export function AdminContentEditForm({ initialValues }: AdminContentEditFormProp
           Change to backdate the article. Only applies to published content.
         </span>
       </div>
+
+      {(initialValues.status === 'DRAFT' || initialValues.scheduledPublishAt) && (
+        <div className="admin-content-field">
+          <label htmlFor="edit-scheduled-at">Scheduled publish date (optional)</label>
+          <input
+            id="edit-scheduled-at"
+            name="scheduledPublishAt"
+            type="datetime-local"
+            value={scheduledPublishAt}
+            onChange={(e) => setScheduledPublishAt(e.target.value)}
+          />
+          <span className="admin-content-hint">
+            When the article will be published automatically. Leave empty to remove schedule.
+          </span>
+        </div>
+      )}
 
       {error && (
         <p className="msg-error" role="alert">

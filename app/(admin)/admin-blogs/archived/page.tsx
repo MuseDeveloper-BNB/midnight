@@ -11,26 +11,14 @@ function formatDate(iso: string) {
   });
 }
 
-function getStatusLabel(c: { status: string; scheduledPublishAt: Date | null }) {
-  if (c.status === 'PUBLISHED') return 'Published';
-  if (c.status === 'DRAFT' && c.scheduledPublishAt) return 'Scheduled';
-  return 'Draft';
-}
-
-function getStatusClass(c: { status: string; scheduledPublishAt: Date | null }) {
-  if (c.status === 'PUBLISHED') return 'admin-list-status--published';
-  if (c.status === 'DRAFT' && c.scheduledPublishAt) return 'admin-list-status--scheduled';
-  return 'admin-list-status--draft';
-}
-
-function getDisplayDate(c: { status: string; publishedAt: Date | null; scheduledPublishAt: Date | null }) {
-  if (c.status === 'PUBLISHED' && c.publishedAt) return formatDate(c.publishedAt.toISOString());
+function getDisplayDate(c: { publishedAt: Date | null; scheduledPublishAt: Date | null }) {
+  if (c.publishedAt) return formatDate(c.publishedAt.toISOString());
   if (c.scheduledPublishAt) return formatDate(c.scheduledPublishAt.toISOString());
   return '—';
 }
 
-export default async function AdminBlogsPage() {
-  const items = await contentService.getContentForAdminList({
+export default async function AdminBlogsArchivedPage() {
+  const items = await contentService.getArchivedContent({
     type: 'BLOG',
     limit: 100,
     sort: 'newest',
@@ -39,28 +27,28 @@ export default async function AdminBlogsPage() {
   return (
     <section className="admin-dashboard">
       <header className="admin-dashboard-header">
-        <h1>Blogs</h1>
-        <p>Blog posts. Open to view, or edit via the link.</p>
-        <Link href="/admin-blogs/archived" className="admin-archived-link">
-          View archived
+        <h1>Archived Blogs</h1>
+        <p>Archived blog posts. Edit to restore or change status.</p>
+        <Link href="/admin-blogs" className="admin-archived-link">
+          ← Back to Blogs
         </Link>
       </header>
 
       <div className="admin-dashboard-main">
         <div className="admin-users-card">
           {items.length === 0 ? (
-            <p className="admin-list-empty">No blogs yet.</p>
+            <p className="admin-list-empty">No archived blogs.</p>
           ) : (
             <ul className="admin-list">
               {items.map((c) => (
                 <li key={c.id} className="admin-list-item">
                   <div className="admin-list-item-content">
                     <div className="admin-list-item-main">
-                      <Link href={`/blog/${c.slug}`} className="admin-list-item-title">
+                      <Link href={`/admin/content/${c.id}`} className="admin-list-item-title">
                         {c.title}
                       </Link>
                       <div className="admin-list-item-meta">
-                        <span className={`admin-list-status ${getStatusClass(c)}`}>{getStatusLabel(c)}</span>
+                        <span className="admin-list-status admin-list-status--archived">Archived</span>
                         <span className="admin-list-meta-sep">·</span>
                         <span>{getDisplayDate(c)}</span>
                         <span className="admin-list-meta-sep">·</span>

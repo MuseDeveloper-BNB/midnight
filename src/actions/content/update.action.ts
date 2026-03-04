@@ -24,6 +24,17 @@ const updateSchema = z.object({
     .refine((v) => !v || !Number.isNaN(v.getTime()), {
       message: 'Invalid published date.',
     }),
+  scheduledPublishAt: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (!v || !v.trim()) return null;
+      const d = new Date(v.trim());
+      return Number.isNaN(d.getTime()) ? undefined : d;
+    })
+    .refine((v) => v === null || !Number.isNaN(v!.getTime()), {
+      message: 'Invalid scheduled date.',
+    }),
 });
 
 function formDataToPayload(fd: FormData): {
@@ -34,6 +45,7 @@ function formDataToPayload(fd: FormData): {
   blogAuthor?: string | null;
   removeImage?: boolean;
   publishedAt?: string;
+  scheduledPublishAt?: string;
 } {
   const id = fd.get('id');
   const title = fd.get('title');
@@ -41,6 +53,7 @@ function formDataToPayload(fd: FormData): {
   const slug = fd.get('slug');
   const blogAuthor = fd.get('blogAuthor');
   const publishedAt = fd.get('publishedAt');
+  const scheduledPublishAt = fd.get('scheduledPublishAt');
   const removeImage = fd.get('removeImage') === 'on' || fd.get('removeImage') === 'true' || fd.get('removeImage') === '1';
   return {
     id: typeof id === 'string' ? id : '',
@@ -50,6 +63,7 @@ function formDataToPayload(fd: FormData): {
     blogAuthor: typeof blogAuthor === 'string' ? (blogAuthor.trim() ? blogAuthor.trim() : null) : undefined,
     removeImage: removeImage || undefined,
     publishedAt: typeof publishedAt === 'string' && publishedAt.trim() ? publishedAt.trim() : undefined,
+    scheduledPublishAt: typeof scheduledPublishAt === 'string' ? scheduledPublishAt.trim() : undefined,
   };
 }
 
@@ -106,6 +120,9 @@ export async function updateContentAction(
     }
     if (parsed.data.publishedAt !== undefined) {
       updateData.publishedAt = parsed.data.publishedAt;
+    }
+    if ('scheduledPublishAt' in parsed.data) {
+      updateData.scheduledPublishAt = parsed.data.scheduledPublishAt;
     }
 
     const content = await contentService.updateContent(

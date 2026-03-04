@@ -11,8 +11,26 @@ function formatDate(iso: string) {
   });
 }
 
+function getStatusLabel(c: { status: string; scheduledPublishAt: Date | null }) {
+  if (c.status === 'PUBLISHED') return 'Published';
+  if (c.status === 'DRAFT' && c.scheduledPublishAt) return 'Scheduled';
+  return 'Draft';
+}
+
+function getStatusClass(c: { status: string; scheduledPublishAt: Date | null }) {
+  if (c.status === 'PUBLISHED') return 'admin-list-status--published';
+  if (c.status === 'DRAFT' && c.scheduledPublishAt) return 'admin-list-status--scheduled';
+  return 'admin-list-status--draft';
+}
+
+function getDisplayDate(c: { status: string; publishedAt: Date | null; scheduledPublishAt: Date | null }) {
+  if (c.status === 'PUBLISHED' && c.publishedAt) return formatDate(c.publishedAt.toISOString());
+  if (c.scheduledPublishAt) return formatDate(c.scheduledPublishAt.toISOString());
+  return '—';
+}
+
 export default async function AdminNewsPage() {
-  const items = await contentService.getPublishedContent({
+  const items = await contentService.getContentForAdminList({
     type: 'NEWS',
     limit: 100,
     sort: 'newest',
@@ -22,37 +40,38 @@ export default async function AdminNewsPage() {
     <section className="admin-dashboard">
       <header className="admin-dashboard-header">
         <h1>News</h1>
-        <p>Published news articles. Open to view, or edit via the link.</p>
+        <p>News articles. Open to view, or edit via the link.</p>
+        <Link href="/admin-news/archived" className="admin-archived-link">
+          View archived
+        </Link>
       </header>
 
       <div className="admin-dashboard-main">
         <div className="admin-users-card">
           {items.length === 0 ? (
-            <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>No published news yet.</p>
+            <p className="admin-list-empty">No news yet.</p>
           ) : (
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            <ul className="admin-list">
               {items.map((c) => (
-                <li
-                  key={c.id}
-                  style={{
-                    padding: 'var(--space-sm) 0',
-                    borderBottom: '1px solid var(--color-border-light)',
-                  }}
-                >
-                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-sm)', justifyContent: 'space-between' }}>
-                    <div>
-                      <Link href={`/news/${c.slug}`} style={{ fontWeight: 600, color: 'var(--color-ink)' }}>
+                <li key={c.id} className="admin-list-item">
+                  <div className="admin-list-item-content">
+                    <div className="admin-list-item-main">
+                      <Link href={`/news/${c.slug}`} className="admin-list-item-title">
                         {c.title}
                       </Link>
-                      <span style={{ marginLeft: 'var(--space-sm)', fontSize: 'var(--text-small)', color: 'var(--color-text-muted)' }}>
-                        {c.publishedAt && formatDate(c.publishedAt.toISOString())}
-                        {' · '}
-                        {c.blogAuthor ?? c.author?.name ?? c.author?.email ?? '—'}
-                      </span>
+                      <div className="admin-list-item-meta">
+                        <span className={`admin-list-status ${getStatusClass(c)}`}>{getStatusLabel(c)}</span>
+                        <span className="admin-list-meta-sep">·</span>
+                        <span>{getDisplayDate(c)}</span>
+                        <span className="admin-list-meta-sep">·</span>
+                        <span>{c.blogAuthor ?? c.author?.name ?? c.author?.email ?? '—'}</span>
+                      </div>
                     </div>
-                    <Link href={`/admin/content/${c.id}`} className="btn btn-outline" style={{ flexShrink: 0 }}>
-                      Edit
-                    </Link>
+                    <div className="admin-list-item-actions">
+                      <Link href={`/admin/content/${c.id}`} className="btn btn-outline btn-sm">
+                        Edit
+                      </Link>
+                    </div>
                   </div>
                 </li>
               ))}

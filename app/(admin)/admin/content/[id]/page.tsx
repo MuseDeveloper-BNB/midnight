@@ -5,7 +5,10 @@ import { archiveContentAction } from '@/actions/content/archive.action';
 import { AdminContentEditForm } from '@/components/admin/AdminContentEditForm';
 import { db } from '@/lib/db';
 
-type PageProps = { params: Promise<{ id: string }> | { id: string } };
+type PageProps = {
+  params: Promise<{ id: string }> | { id: string };
+  searchParams?: Promise<{ success?: string }> | { success?: string };
+};
 
 function statusLabel(s: string) {
   if (s === 'PUBLISHED') return 'Published';
@@ -13,8 +16,20 @@ function statusLabel(s: string) {
   return 'Draft';
 }
 
-export default async function AdminEditContentPage({ params }: PageProps) {
+function formatScheduledDate(d: Date) {
+  return new Date(d).toLocaleString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+export default async function AdminEditContentPage({ params, searchParams }: PageProps) {
   const { id } = 'then' in params ? await params : params;
+  const resolvedSearch = searchParams ? ('then' in searchParams ? await searchParams : searchParams) : {};
+  const success = resolvedSearch.success;
   const content = await db.content.findUnique({ where: { id } });
   if (!content) {
     return (
@@ -40,6 +55,11 @@ export default async function AdminEditContentPage({ params }: PageProps) {
           <span className={`admin-edit-status admin-edit-status--${content.status.toLowerCase()}`}>
             {statusLabel(content.status)}
           </span>
+          {content.status === 'DRAFT' && content.scheduledPublishAt && (
+            <span className="admin-edit-scheduled" style={{ marginLeft: 'var(--space-sm)', fontSize: 'var(--text-small)', color: 'var(--color-text-muted)' }}>
+              Scheduled for {formatScheduledDate(content.scheduledPublishAt)}
+            </span>
+          )}
         </div>
         <nav className="admin-edit-nav" aria-label="Edit page links">
           {isPublished && (
@@ -65,27 +85,56 @@ export default async function AdminEditContentPage({ params }: PageProps) {
               blogAuthor: content.blogAuthor,
               imageUrl: content.imageUrl,
               publishedAt: content.publishedAt,
+              scheduledPublishAt: content.scheduledPublishAt,
+              status: content.status,
             }}
           />
 
+          {success === 'published' && (
+            <p className="msg-success" role="status">
+              Content published successfully.
+            </p>
+          )}
+          {success === 'archived' && (
+            <p className="msg-success" role="status">
+              Content archived successfully.
+            </p>
+          )}
+          {success === 'unpublished' && (
+            <p className="msg-success" role="status">
+              Content unpublished successfully.
+            </p>
+          )}
           <div className="admin-edit-actions">
             <span className="admin-edit-actions-label">Status</span>
             <div className="admin-edit-actions-btns">
               <form action={publishContentAction}>
                 <input type="hidden" name="id" value={content.id} />
-                <button type="submit" className="admin-edit-btn admin-edit-btn--primary">
+                <input type="hidden" name="returnTo" value={`/admin/content/${content.id}`} />
+                <button
+                  type="submit"
+                  className={`admin-edit-btn ${content.status === 'PUBLISHED' ? 'admin-edit-btn--primary' : 'admin-edit-btn--secondary'}`}
+                >
                   Publish
                 </button>
               </form>
               <form action={unpublishContentAction}>
                 <input type="hidden" name="id" value={content.id} />
-                <button type="submit" className="admin-edit-btn admin-edit-btn--secondary">
+                <input type="hidden" name="returnTo" value={`/admin/content/${content.id}`} />
+                <button
+                  type="submit"
+                  className={`admin-edit-btn ${content.status === 'DRAFT' ? 'admin-edit-btn--primary' : 'admin-edit-btn--secondary'}`}
+                >
                   Unpublish
                 </button>
               </form>
               <form action={archiveContentAction}>
                 <input type="hidden" name="id" value={content.id} />
-                <button type="submit" className="admin-edit-btn admin-edit-btn--secondary">
+                <input type="hidden" name="returnTo" value={`/admin/content/${content.id}`} />
+                <button
+                  type="submit"
+                  className={`admin-edit-btn ${content.status === 'ARCHIVED' ? 'admin-edit-btn--primary' : 'admin-edit-btn--secondary'}`}
+                >
                   Archive
                 </button>
               </form>
