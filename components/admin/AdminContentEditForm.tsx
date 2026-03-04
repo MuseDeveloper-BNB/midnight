@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation';
 import { updateContentAction } from '@/actions/content/update.action';
 import { RichTextEditor } from '@/components/content/RichTextEditor';
 
+function toDatetimeLocal(d: Date | string | null | undefined): string {
+  if (!d) return '';
+  const date = typeof d === 'string' ? new Date(d) : d;
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 type AdminContentEditFormProps = {
   initialValues: {
     id: string;
@@ -15,6 +23,7 @@ type AdminContentEditFormProps = {
     slug: string;
     blogAuthor?: string | null;
     imageUrl?: string | null;
+    publishedAt?: Date | string | null;
   };
 };
 
@@ -24,6 +33,7 @@ export function AdminContentEditForm({ initialValues }: AdminContentEditFormProp
   const [slug, setSlug] = useState(initialValues.slug);
   const [body, setBody] = useState(initialValues.body || '');
   const [blogAuthor, setBlogAuthor] = useState(initialValues.blogAuthor ?? '');
+  const [publishedAt, setPublishedAt] = useState(toDatetimeLocal(initialValues.publishedAt ?? null));
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +54,7 @@ export function AdminContentEditForm({ initialValues }: AdminContentEditFormProp
     formData.set('blogAuthor', blogAuthor.trim());
     if (removeImage) formData.set('removeImage', 'on');
     if (imageFile) formData.set('image', imageFile);
+    if (publishedAt.trim()) formData.set('publishedAt', publishedAt.trim());
 
     startTransition(async () => {
       const result = await updateContentAction(formData);
@@ -162,6 +173,20 @@ export function AdminContentEditForm({ initialValues }: AdminContentEditFormProp
           maxLength={120}
           placeholder="e.g. John Smith"
         />
+      </div>
+
+      <div className="admin-content-field">
+        <label htmlFor="edit-published-at">Published date (optional)</label>
+        <input
+          id="edit-published-at"
+          name="publishedAt"
+          type="datetime-local"
+          value={publishedAt}
+          onChange={(e) => setPublishedAt(e.target.value)}
+        />
+        <span className="admin-content-hint">
+          Change to backdate the article. Only applies to published content.
+        </span>
       </div>
 
       {error && (

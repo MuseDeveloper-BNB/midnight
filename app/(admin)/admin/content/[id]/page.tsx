@@ -64,6 +64,7 @@ export default async function AdminEditContentPage({ params }: PageProps) {
               slug: content.slug,
               blogAuthor: content.blogAuthor,
               imageUrl: content.imageUrl,
+              publishedAt: content.publishedAt,
             }}
           />
 

@@ -16,6 +16,14 @@ const updateSchema = z.object({
   blogAuthor: z.union([z.string().trim().min(1).max(120), z.null()]).optional(),
   imageUrl: z.union([z.string().min(1).max(2048), z.null()]).optional(),
   removeImage: z.boolean().optional(),
+  publishedAt: z
+    .string()
+    .min(1)
+    .optional()
+    .transform((v) => (v && v.trim() ? new Date(v.trim()) : undefined))
+    .refine((v) => !v || !Number.isNaN(v.getTime()), {
+      message: 'Invalid published date.',
+    }),
 });
 
 function formDataToPayload(fd: FormData): {
@@ -25,12 +33,14 @@ function formDataToPayload(fd: FormData): {
   slug?: string;
   blogAuthor?: string | null;
   removeImage?: boolean;
+  publishedAt?: string;
 } {
   const id = fd.get('id');
   const title = fd.get('title');
   const body = fd.get('body');
   const slug = fd.get('slug');
   const blogAuthor = fd.get('blogAuthor');
+  const publishedAt = fd.get('publishedAt');
   const removeImage = fd.get('removeImage') === 'on' || fd.get('removeImage') === 'true' || fd.get('removeImage') === '1';
   return {
     id: typeof id === 'string' ? id : '',
@@ -39,6 +49,7 @@ function formDataToPayload(fd: FormData): {
     slug: typeof slug === 'string' && slug.trim() ? slug.trim() : undefined,
     blogAuthor: typeof blogAuthor === 'string' ? (blogAuthor.trim() ? blogAuthor.trim() : null) : undefined,
     removeImage: removeImage || undefined,
+    publishedAt: typeof publishedAt === 'string' && publishedAt.trim() ? publishedAt.trim() : undefined,
   };
 }
 
@@ -92,6 +103,9 @@ export async function updateContentAction(
       updateData.imageUrl = null;
     } else if (imageUrl) {
       updateData.imageUrl = imageUrl;
+    }
+    if (parsed.data.publishedAt !== undefined) {
+      updateData.publishedAt = parsed.data.publishedAt;
     }
 
     const content = await contentService.updateContent(

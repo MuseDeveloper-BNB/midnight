@@ -35,6 +35,14 @@ export const contentSchema = z.object({
     .refine((v) => !v || !Number.isNaN(v.getTime()), {
       message: 'Invalid scheduled publish date.',
     }),
+  publishedAt: z
+    .string()
+    .min(1)
+    .optional()
+    .transform((v) => (v && v.trim() ? new Date(v.trim()) : undefined))
+    .refine((v) => !v || !Number.isNaN(v.getTime()), {
+      message: 'Invalid published date.',
+    }),
 });
 
 const emptyToUndefined = (v: unknown) =>

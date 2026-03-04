@@ -16,7 +16,8 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
   const [body, setBody] = useState('');
   const [blogAuthor, setBlogAuthor] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [publishNow, setPublishNow] = useState(true);
+  const [publishMode, setPublishMode] = useState<'now' | 'custom' | 'schedule'>('now');
+  const [customPublishedAt, setCustomPublishedAt] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -35,9 +36,12 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
     if (blogAuthor.trim()) formData.set('blogAuthor', blogAuthor.trim());
     formData.set('body', body || '');
     if (imageFile) formData.set('image', imageFile);
-    if (publishNow) {
+    if (publishMode === 'now') {
       formData.set('publishNow', 'on');
-    } else if (scheduledAt.trim()) {
+    } else if (publishMode === 'custom' && customPublishedAt.trim()) {
+      formData.set('publishNow', 'on');
+      formData.set('publishedAt', customPublishedAt.trim());
+    } else if (publishMode === 'schedule' && scheduledAt.trim()) {
       formData.set('scheduledPublishAt', scheduledAt.trim());
     }
 
@@ -49,6 +53,7 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
         setSlug('');
         setBody('');
         setBlogAuthor('');
+        setCustomPublishedAt('');
         setScheduledAt('');
         setImageFile(null);
         if (imageInputRef.current) imageInputRef.current.value = '';
@@ -155,8 +160,8 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
               type="radio"
               name={`${contentType}-publish-mode`}
               value="now"
-              checked={publishNow}
-              onChange={() => setPublishNow(true)}
+              checked={publishMode === 'now'}
+              onChange={() => setPublishMode('now')}
             />
             <span>Publish immediately</span>
           </label>
@@ -164,14 +169,39 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
             <input
               type="radio"
               name={`${contentType}-publish-mode`}
+              value="custom"
+              checked={publishMode === 'custom'}
+              onChange={() => setPublishMode('custom')}
+            />
+            <span>Publish with custom date</span>
+          </label>
+          <label className="admin-content-radio">
+            <input
+              type="radio"
+              name={`${contentType}-publish-mode`}
               value="schedule"
-              checked={!publishNow}
-              onChange={() => setPublishNow(false)}
+              checked={publishMode === 'schedule'}
+              onChange={() => setPublishMode('schedule')}
             />
             <span>Schedule for later</span>
           </label>
         </div>
-        {!publishNow && (
+        {publishMode === 'custom' && (
+          <div className="admin-content-schedule">
+            <label htmlFor={`${contentType}-customPublishedAt`}>Published date</label>
+            <input
+              id={`${contentType}-customPublishedAt`}
+              type="datetime-local"
+              value={customPublishedAt}
+              onChange={(e) => setCustomPublishedAt(e.target.value)}
+              required
+            />
+            <span className="admin-content-hint">
+              Use a past date to backdate the article (e.g. to make it appear older).
+            </span>
+          </div>
+        )}
+        {publishMode === 'schedule' && (
           <div className="admin-content-schedule">
             <label htmlFor={`${contentType}-scheduledAt`}>Publish at</label>
             <input
@@ -179,6 +209,7 @@ export function AdminContentForm({ contentType }: AdminContentFormProps) {
               type="datetime-local"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
+              required
             />
             <span className="admin-content-hint">
               Article will be automatically visible when this time is reached.

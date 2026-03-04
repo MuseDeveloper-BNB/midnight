@@ -13,6 +13,7 @@ import { saveUploadedImage } from '@/lib/upload';
 function formDataToPayload(fd: FormData) {
   const publishNowRaw = fd.get('publishNow');
   const raw = fd.get('scheduledPublishAt');
+  const publishedAtRaw = fd.get('publishedAt');
   const blogAuthorRaw = fd.get('blogAuthor');
   const publishNowFlag =
     publishNowRaw === 'on' || publishNowRaw === 'true' || publishNowRaw === '1';
@@ -25,11 +26,14 @@ function formDataToPayload(fd: FormData) {
     slug: (fd.get('slug') as string | null) || undefined,
     blogAuthor:
       typeof blogAuthorRaw === 'string' && blogAuthorRaw.trim() ? blogAuthorRaw.trim() : undefined,
-    // Safety fallback: if form does not send publishNow and no schedule is set, publish immediately.
     publishNow: publishNowFlag || (!publishNowFlag && !hasSchedule),
     scheduledPublishAt:
       raw && typeof raw === 'string' && raw.trim()
         ? (raw.trim() as string)
+        : undefined,
+    publishedAt:
+      publishedAtRaw && typeof publishedAtRaw === 'string' && publishedAtRaw.trim()
+        ? (publishedAtRaw.trim() as string)
         : undefined,
   };
 }
@@ -76,6 +80,7 @@ export async function createContentAction(
         blogAuthor: parsed.data.blogAuthor,
         publishNow: parsed.data.publishNow ?? false,
         scheduledPublishAt: parsed.data.scheduledPublishAt,
+        publishedAt: parsed.data.publishedAt,
       },
       userId
     );

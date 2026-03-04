@@ -87,13 +87,16 @@ export class ContentService {
       blogAuthor?: string;
       publishNow?: boolean;
       scheduledPublishAt?: Date;
+      publishedAt?: Date;
     },
     authorId: string
   ) {
     const slug = data.slug ?? generateSlug(data.title);
     const now = new Date();
     const status: ContentStatus = data.publishNow ? ('PUBLISHED' as ContentStatus) : ('DRAFT' as ContentStatus);
-    const publishedAt = data.publishNow ? now : null;
+    const publishedAt = data.publishNow
+      ? (data.publishedAt ?? now)
+      : null;
     const scheduledPublishAt = !data.publishNow && data.scheduledPublishAt ? data.scheduledPublishAt : null;
 
     return db.content.create({
@@ -114,7 +117,7 @@ export class ContentService {
 
   async updateContent(
     id: string,
-    data: { title?: string; body?: string; slug?: string; blogAuthor?: string | null; imageUrl?: string | null },
+    data: { title?: string; body?: string; slug?: string; blogAuthor?: string | null; imageUrl?: string | null; publishedAt?: Date },
     actorId: string,
     options?: { allowAdminOverride?: boolean }
   ) {
