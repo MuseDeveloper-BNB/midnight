@@ -34,11 +34,11 @@ function formatDate(dateStr: string): string {
 }
 
 export default async function HomePage() {
-  const news = await contentService.getPublishedContent({ type: 'NEWS', limit: 7 });
+  const news = await contentService.getPublishedContent({ type: 'NEWS', limit: 10 });
   const blog = await contentService.getPublishedContent({ type: 'BLOG', limit: 3 });
   const lead = news[0] ?? null;
-  const secondary = news.slice(1, 4);
-  const moreNews = news.slice(4);
+  const secondary = news.slice(1, 7);
+  const moreNews = news.slice(7);
 
   if (!lead) {
     return (
@@ -101,7 +101,9 @@ export default async function HomePage() {
       {/* More news grid */}
       {moreNews.length > 0 && (
         <section className="news-grid" aria-label="More news">
-          <h2 className="news-grid-title">More news</h2>
+          <h2 className="news-grid-title">
+            <Link href="/news">More news</Link>
+          </h2>
           {moreNews.map((item) => {
             const image = getContentImage(item);
             return (
